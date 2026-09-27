@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MockTest Builder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">MockTest <span>Builder</span></div>
+        <div class="top-actions">
+            <button id="builderTab" class="tab-btn active">Create Test</button>
+            <button id="testTab" class="tab-btn hidden">Take Test</button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- BUILDER -->
+        <section id="builderScreen">
+            <div class="page-title">
+                <div>
+                    <div class="badge">Λɴϻᴏʟ Ƙᴜϻᴀʀ » </div>
+                    <h1>Create Your Mock Test</h1>
+                    <p>Add questions directly here.By Λɴϻᴏʟ Ƙᴜϻᴀʀ.</p>
+                </div>
+                <button id="clearAllBtn" class="danger-btn">Clear All</button>
+            </div>
+
+            <div class="settings card">
+                <h2>Test Settings</h2>
+                <div class="settings-grid">
+                    <label>Test Name
+                        <input id="testName" type="text" value="My Mock Test" placeholder="e.g. SSC CGL">
+                    </label>
+                    <label>Time (minutes)
+                        <input id="testTime" type="number" value="10" min="1">
+                    </label>
+                    <label>Correct Marks
+                        <input id="correctMarks" type="number" value="1" min="0" step="0.25">
+                    </label>
+                    <label>Wrong Marks
+                        <input id="wrongMarks" type="number" value="0.25" min="0" step="0.25">
+                    </label>
+                </div>
+            </div>
+
+            <div class="card question-form">
+                <div class="section-head">
+                    <h2 id="formTitle">Add Question</h2>
+                    <span id="questionCount" class="count-badge">0 Questions</span>
+                </div>
+
+                <label>Subject
+                    <input id="subject" type="text" placeholder="e.g. Maths, English, GK, Reasoning">
+                </label>
+
+                <label>Question
+                    <textarea id="question" rows="3" placeholder="Write your question here..."></textarea>
+                </label>
+
+                <div class="options-grid">
+                    <label>Option A <input id="option0" type="text" placeholder="Option A"></label>
+                    <label>Option B <input id="option1" type="text" placeholder="Option B"></label>
+                    <label>Option C <input id="option2" type="text" placeholder="Option C"></label>
+                    <label>Option D <input id="option3" type="text" placeholder="Option D"></label>
+                </div>
+
+                <div class="form-bottom">
+                    <label>Correct Answer
+                        <select id="correctAnswer">
+                            <option value="0">Option A</option>
+                            <option value="1">Option B</option>
+                            <option value="2">Option C</option>
+                            <option value="3">Option D</option>
+                        </select>
+                    </label>
+                    <button id="addQuestionBtn" class="primary-btn">+ Add Question</button>
+                </div>
+            </div>
+
+            <div id="questionList" class="question-list"></div>
+
+            <div class="create-area card">
+                <div>
+                    <h2>Ready?</h2>
+                    <p>Your test will use the settings and questions above.</p>
+                </div>
+                <button id="createTestBtn" class="create-btn">🚀 Create Test</button>
+            </div>
+        </section>
+
+        <!-- TEST -->
+        <section id="testScreen" class="hidden">
+            <div class="test-title-row">
+                <div>
+                    <h1 id="runningTestName">Mock Test</h1>
+                    <p><span id="testProgress">1 / 10</span></p>
+                </div>
+                <button id="backBuilderBtn" class="secondary-btn">← Edit Test</button>
+            </div>
+
+            <div class="test-header card">
+                <div><span class="muted">Question</span><strong id="currentNo">1</strong></div>
+                <div id="timer" class="timer">10:00</div>
+                <button id="submitBtn" class="submit-btn">Submit Test</button>
+            </div>
+
+            <div class="progress-wrap">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <div class="test-layout">
+                <section class="card question-card">
+                    <div class="question-top">
+                        <span id="subjectTag" class="subject-tag">General</span>
+                        <span id="marksText" class="muted">+1 / -0.25</span>
+                    </div>
+                    <h2 id="questionText"></h2>
+                    <div id="options" class="options"></div>
+
+                    <div class="nav-buttons">
+                        <button id="prevBtn" class="secondary-btn">← Previous</button>
+                        <button id="reviewBtn" class="review-btn">⚑ Mark for Review</button>
+                        <button id="nextBtn" class="primary-btn">Next →</button>
+                    </div>
+                </section>
+
+                <aside class="card palette-card">
+                    <h3>Question Palette</h3>
+                    <div class="legend">
+                        <span><i class="dot answered"></i> Answered</span>
+                        <span><i class="dot marked"></i> Review</span>
+                        <span><i class="dot current"></i> Current</span>
+                    </div>
+                    <div id="palette" class="palette"></div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- RESULT -->
+        <section id="resultScreen" class="card result-card hidden">
+            <div class="result-icon">✓</div>
+            <h1>Test Completed</h1>
+            <p id="resultMessage"></p>
+
+            <div class="score-box">
+                <div><b id="score">0</b><small>Score</small></div>
+                <div><b id="correct">0</b><small>Correct</small></div>
+                <div><b id="wrong">0</b><small>Wrong</small></div>
+                <div><b id="unattempted">0</b><small>Unattempted</small></div>
+            </div>
+
+            <div class="accuracy">
+                <div class="accuracy-head"><span>Accuracy</span><b id="accuracyText">0%</b></div>
+                <div class="accuracy-track">
+                    <div id="accuracyBar"></div>
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button id="againBtn" class="primary-btn">Try Again</button>
+                <button id="editAfterBtn" class="secondary-btn">Edit Test</button>
+            </div>
+
+            <details class="review-details">
+                <summary>View Answer Review</summary>
+                <div id="reviewList"></div>
+            </details>
+        </section>
+    </main>
+
+    <footer>MockTest Builder © • By Λɴϻᴏʟ Ƙᴜϻᴀʀ.</footer>
+    <script src="script.js"></script>
+</body>
+
+</html>
