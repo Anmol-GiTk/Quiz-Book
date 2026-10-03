@@ -8,14 +8,58 @@ let timeLeft = 0;
 let timerInterval = null;
 let submitted = false;
 
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
+const STORAGE_KEY = "mockTestBuilderData";
 
+function saveTest() {
+  const data = {
+    questions: questions,
+    settings: {
+      name: $("testName").value,
+      time: $("testTime").value,
+      correct: $("correctMarks").value,
+      wrong: $("wrongMarks").value,
+    },
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  alert("✅ Test saved successfully!");
+}
+
+function loadSavedTest() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) {
+    renderQuestionList();
+    return;
+  }
+
+  try {
+    const data = JSON.parse(saved);
+
+    questions = Array.isArray(data.questions) ? data.questions : [];
+
+    if (data.settings) {
+      $("testName").value = data.settings.name || "My Mock Test";
+      $("testTime").value = data.settings.time || 10;
+      $("correctMarks").value = data.settings.correct || 1;
+      $("wrongMarks").value = data.settings.wrong || 0.25;
+    }
+
+    renderQuestionList();
+  } catch (error) {
+    console.error("Saved data load error:", error);
+    localStorage.removeItem(STORAGE_KEY);
+    renderQuestionList();
+  }
+}
 function getSettings() {
   return {
     name: $("testName").value.trim() || "My Mock Test",
     time: Math.max(1, Number($("testTime").value) || 10),
     correct: Math.max(0, Number($("correctMarks").value) || 1),
-    wrong: Math.max(0, Number($("wrongMarks").value) || 0)
+    wrong: Math.max(0, Number($("wrongMarks").value) || 0),
   };
 }
 
@@ -35,11 +79,11 @@ function clearForm() {
 function addOrUpdateQuestion() {
   const subject = $("subject").value.trim() || "General";
   const question = $("question").value.trim();
-  const options = [0,1,2,3].map(i => $(`option${i}`).value.trim());
+  const options = [0, 1, 2, 3].map((i) => $(`option${i}`).value.trim());
   const answer = Number($("correctAnswer").value);
 
   if (!question) return alert("Please write the question.");
-  if (options.some(x => !x)) return alert("Please fill all 4 options.");
+  if (options.some((x) => !x)) return alert("Please fill all 4 options.");
 
   const item = { subject, question, options, answer };
 
@@ -51,9 +95,12 @@ function addOrUpdateQuestion() {
 }
 
 function renderQuestionList() {
-  $("questionCount").textContent = `${questions.length} Question${questions.length === 1 ? "" : "s"}`;
+  $("questionCount").textContent =
+    `${questions.length} Question${questions.length === 1 ? "" : "s"}`;
 
-  $("questionList").innerHTML = questions.map((q, i) => `
+  $("questionList").innerHTML = questions
+    .map(
+      (q, i) => `
     <div class="question-item">
       <div class="question-item-head">
         <span class="q-number">Q${i + 1} • ${escapeHtml(q.subject)}</span>
@@ -71,13 +118,23 @@ function renderQuestionList() {
         <button class="delete-btn" onclick="deleteQuestion(${i})">Delete</button>
       </div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[ch]));
+  return value.replace(
+    /[&<>"']/g,
+    (ch) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[ch],
+  );
 }
 
 function editQuestion(i) {
@@ -87,9 +144,9 @@ function editQuestion(i) {
   $("addQuestionBtn").textContent = "✓ Update Question";
   $("subject").value = q.subject;
   $("question").value = q.question;
-  q.options.forEach((x, n) => $(`option${n}`).value = x);
+  q.options.forEach((x, n) => ($(`option${n}`).value = x));
   $("correctAnswer").value = q.answer;
-  window.scrollTo({top: 200, behavior: "smooth"});
+  window.scrollTo({ top: 200, behavior: "smooth" });
 }
 
 function deleteQuestion(i) {
@@ -98,19 +155,27 @@ function deleteQuestion(i) {
   clearForm();
   renderQuestionList();
 }
-
 function clearAll() {
-  if (!questions.length && !confirm("Reset all test settings too?")) return;
-  if (questions.length && !confirm("Delete all questions and reset settings?")) return;
+  const message = questions.length
+    ? "Delete all questions, reset settings and delete saved test?"
+    : "Reset all test settings and delete saved test?";
+
+  if (!confirm(message)) return;
+
   questions = [];
+
+  localStorage.removeItem(STORAGE_KEY);
+
   $("testName").value = "My Mock Test";
   $("testTime").value = 10;
   $("correctMarks").value = 1;
   $("wrongMarks").value = 0.25;
+
   clearForm();
   renderQuestionList();
-}
 
+  alert("🗑️ All test data deleted.");
+}
 function createTest() {
   if (!questions.length) return alert("Add at least 1 question first.");
 
@@ -149,7 +214,8 @@ function startTimer() {
 function updateTimer() {
   const min = Math.floor(timeLeft / 60);
   const sec = timeLeft % 60;
-  $("timer").textContent = `${String(min).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+  $("timer").textContent =
+    `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   $("timer").classList.toggle("warning", timeLeft <= 60);
 }
 
@@ -158,18 +224,21 @@ function renderQuestion() {
   const s = getSettings();
 
   $("currentNo").textContent = currentQuestion + 1;
-  $("testProgress").textContent = `${currentQuestion + 1} / ${questions.length}`;
+  $("testProgress").textContent =
+    `${currentQuestion + 1} / ${questions.length}`;
   $("questionText").textContent = q.question;
   $("subjectTag").textContent = q.subject;
   $("marksText").textContent = `+${s.correct} / -${s.wrong}`;
-  $("progressBar").style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+  $("progressBar").style.width =
+    `${((currentQuestion + 1) / questions.length) * 100}%`;
 
   $("options").innerHTML = "";
   q.options.forEach((option, index) => {
     const label = document.createElement("label");
     label.className = "option";
-    if (selectedAnswers[currentQuestion] === index) label.classList.add("selected");
-    label.innerHTML = `<input type="radio" name="answer" ${selectedAnswers[currentQuestion] === index ? "checked" : ""}><span><b>${String.fromCharCode(65+index)}.</b> ${escapeHtml(option)}</span>`;
+    if (selectedAnswers[currentQuestion] === index)
+      label.classList.add("selected");
+    label.innerHTML = `<input type="radio" name="answer" ${selectedAnswers[currentQuestion] === index ? "checked" : ""}><span><b>${String.fromCharCode(65 + index)}.</b> ${escapeHtml(option)}</span>`;
     label.onclick = () => {
       selectedAnswers[currentQuestion] = index;
       renderQuestion();
@@ -178,8 +247,11 @@ function renderQuestion() {
   });
 
   $("prevBtn").disabled = currentQuestion === 0;
-  $("nextBtn").textContent = currentQuestion === questions.length - 1 ? "Finish →" : "Next →";
-  $("reviewBtn").textContent = marked[currentQuestion] ? "✓ Remove Review" : "⚑ Mark for Review";
+  $("nextBtn").textContent =
+    currentQuestion === questions.length - 1 ? "Finish →" : "Next →";
+  $("reviewBtn").textContent = marked[currentQuestion]
+    ? "✓ Remove Review"
+    : "⚑ Mark for Review";
   renderPalette();
 }
 
@@ -191,7 +263,10 @@ function renderPalette() {
     if (selectedAnswers[i] !== null) b.classList.add("answered");
     if (marked[i]) b.classList.add("marked");
     if (i === currentQuestion) b.classList.add("current");
-    b.onclick = () => { currentQuestion = i; renderQuestion(); };
+    b.onclick = () => {
+      currentQuestion = i;
+      renderQuestion();
+    };
     $("palette").appendChild(b);
   });
 }
@@ -217,15 +292,21 @@ function submitTest(autoSubmit) {
   if (submitted) return;
 
   if (!autoSubmit) {
-    const unanswered = selectedAnswers.filter(x => x === null).length;
-    if (unanswered && !confirm(`${unanswered} question(s) are unanswered. Submit anyway?`)) return;
+    const unanswered = selectedAnswers.filter((x) => x === null).length;
+    if (
+      unanswered &&
+      !confirm(`${unanswered} question(s) are unanswered. Submit anyway?`)
+    )
+      return;
   }
 
   submitted = true;
   clearInterval(timerInterval);
 
   const s = getSettings();
-  let correct = 0, wrong = 0, score = 0;
+  let correct = 0,
+    wrong = 0,
+    score = 0;
 
   questions.forEach((q, i) => {
     if (selectedAnswers[i] === null) return;
@@ -240,7 +321,7 @@ function submitTest(autoSubmit) {
 
   const unattempted = questions.length - correct - wrong;
   const attempted = correct + wrong;
-  const accuracy = attempted ? correct / attempted * 100 : 0;
+  const accuracy = attempted ? (correct / attempted) * 100 : 0;
 
   $("testScreen").classList.add("hidden");
   $("resultScreen").classList.remove("hidden");
@@ -258,14 +339,19 @@ function submitTest(autoSubmit) {
 }
 
 function renderReview() {
-  $("reviewList").innerHTML = questions.map((q, i) => {
-    const your = selectedAnswers[i] === null ? "Not attempted" : q.options[selectedAnswers[i]];
-    return `<div class="review-item">
-      <b>Q${i+1}. ${escapeHtml(q.question)}</b>
+  $("reviewList").innerHTML = questions
+    .map((q, i) => {
+      const your =
+        selectedAnswers[i] === null
+          ? "Not attempted"
+          : q.options[selectedAnswers[i]];
+      return `<div class="review-item">
+      <b>Q${i + 1}. ${escapeHtml(q.question)}</b>
       <p class="your-answer">Your answer: ${escapeHtml(your)}</p>
       <p class="correct-answer">Correct answer: ${escapeHtml(q.options[q.answer])}</p>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function showBuilder() {
@@ -279,6 +365,7 @@ function showBuilder() {
 
 $("addQuestionBtn").onclick = addOrUpdateQuestion;
 $("createTestBtn").onclick = createTest;
+$("saveTestBtn").onclick = saveTest;
 $("clearAllBtn").onclick = clearAll;
 $("prevBtn").onclick = previousQuestion;
 $("nextBtn").onclick = nextQuestion;
@@ -296,4 +383,4 @@ $("testTab").onclick = () => {
   }
 };
 
-renderQuestionList();
+loadSavedTest();
